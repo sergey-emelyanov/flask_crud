@@ -9,7 +9,7 @@
 <hr>
 {% for user in users %}
 <ul>
-    <li> {{user.id}} | {{user.name}} | {{ user.email}}</li>
+    <li><a href="{{url_for('show_user', id=user.id)}}">{{user.id}}</a> | {{user.name}} | {{ user.email}}</li>
 </ul>
 {% endfor %}
 </body>
