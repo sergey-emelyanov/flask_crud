@@ -10,13 +10,19 @@
 <form action="/users" method="post">
     <div>
     <label>Name
-    <input type="text" name="name">
+    <input type="text" name="name" value="{{user.name}}">
     </label>
+        {% if errors["name"] %}
+        {{errors["name"]}}
+        {% endif %}
     </div>
     <div>
     <label>Email
-    <input type="text" name="email">
+    <input type="text" name="email" value="{{user.email}}">
     </label>
+        {% if errors["email"] %}
+        {{errors["email"]}}
+        {% endif %}
     </div>
     <input type="submit" value="Create">
 </form>
