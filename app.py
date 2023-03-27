@@ -12,7 +12,6 @@ def base():
 
 @app.route("/users")
 def show_users():
-
     with open("data_file.json", "r") as read_file:
         data = json.load(read_file)
         users = data['users']
@@ -28,7 +27,9 @@ def new_user():
 @app.post("/users")
 def post_users():
     user = request.form.to_dict()
+    user_id = uuid.uuid4()
     new_user = {
+        "id": str(user_id),
         "name": user["name"],
         "email": user["email"]
     }
@@ -37,7 +38,7 @@ def post_users():
         data["users"].append(new_user)
 
     with open("data_file.json", "w", encoding="utf-8") as write_file:
-        json.dump(data, write_file)
+        json.dump(data, write_file, ensure_ascii=False)
 
     return redirect(url_for('show_users'), 302)
 
