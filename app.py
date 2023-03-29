@@ -24,12 +24,45 @@ def show_users():
 
 @app.route("/user/<string:id>")
 def show_user(id):
-    with open("data_file.json", "r",encoding="utf-8") as read_file:
+    with open("data_file.json", "r", encoding="utf-8") as read_file:
         data = json.load(read_file)
 
     user = [x for x in data['users'] if x['id'] == id][0]
 
     return render_template("/users/show.html", user=user)
+
+
+@app.route("/user/<id>/edit")
+def edit_user(id):
+    errors = {}
+    with open("data_file.json", 'r', encoding="utf-8") as read_file:
+        data = json.load(read_file)
+
+    user = [x for x in data['users'] if x['id'] == id][0]
+
+    return render_template('users/edit.html', user=user, errors=errors)
+
+
+@app.route('/user/<id>/patch', methods=['POST'])
+def patch_user(id):
+    with open("data_file.json", 'r', encoding="utf-8") as read_file:
+        data = json.load(read_file)
+
+    user = [x for x in data['users'] if x['id'] == id][0]
+    new_data = request.form.to_dict()
+    errors = validation(new_data)
+    if errors:
+        return render_template("users/edit.html", user=user, errors=errors), 422
+    else:
+        user['name'] = new_data['name']
+        user['email'] = new_data['email']
+
+
+    with open("data_file.json", "w", encoding="utf-8") as write_file:
+        json.dump(data, write_file, ensure_ascii=False)
+
+    flash('Create successful', 'info')
+    return redirect(url_for('show_users'), 302)
 
 
 @app.route("/users/new")
@@ -57,7 +90,7 @@ def post_users():
     if errors:
         flash('Error', category='error')
         messages = get_flashed_messages(with_categories=True)
-        return render_template("/users/new_user.html", errors=errors, user=new_user, messages=messages)
+        return render_template("/users/new_user.html", errors=errors, user=new_user, messages=messages), 422
     else:
         with open("data_file.json", "r", encoding="utf-8") as read_file:
             data = json.load(read_file)
