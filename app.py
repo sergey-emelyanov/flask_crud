@@ -1,9 +1,10 @@
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for, flash, get_flashed_messages
 from validate import validation
 import uuid
 import json
 
 app = Flask(__name__)
+app.config["SECRET_KEY"] = "You will never guess!"
 
 
 @app.route("/")
@@ -13,16 +14,17 @@ def base():
 
 @app.route("/users")
 def show_users():
-    with open("data_file.json", "r") as read_file:
+    with open("data_file.json", "r", encoding="utf-8") as read_file:
         data = json.load(read_file)
         users = data['users']
+    messages = get_flashed_messages(with_categories=True)
 
-    return render_template("/users/index.html", users=users)
+    return render_template("/users/index.html", users=users, messages=messages)
 
 
 @app.route("/user/<string:id>")
 def show_user(id):
-    with open("data_file.json", "r") as read_file:
+    with open("data_file.json", "r",encoding="utf-8") as read_file:
         data = json.load(read_file)
 
     user = [x for x in data['users'] if x['id'] == id][0]
@@ -38,7 +40,8 @@ def new_user():
         "email": ""
     }
     errors = {}
-    return render_template("/users/new_user.html", errors=errors, user=user)
+    messages = get_flashed_messages(with_categories=True)
+    return render_template("/users/new_user.html", errors=errors, user=user, messages=messages)
 
 
 @app.post("/users")
@@ -52,15 +55,19 @@ def post_users():
     }
     errors = validation(user)
     if errors:
-        return render_template("/users/new_user.html", errors=errors, user=new_user)
-    with open("data_file.json", "r", encoding="utf-8") as read_file:
-        data = json.load(read_file)
-        data["users"].append(new_user)
+        flash('Error', category='error')
+        messages = get_flashed_messages(with_categories=True)
+        return render_template("/users/new_user.html", errors=errors, user=new_user, messages=messages)
+    else:
+        with open("data_file.json", "r", encoding="utf-8") as read_file:
+            data = json.load(read_file)
+            data["users"].append(new_user)
 
-    with open("data_file.json", "w", encoding="utf-8") as write_file:
-        json.dump(data, write_file, ensure_ascii=False)
+        with open("data_file.json", "w", encoding="utf-8") as write_file:
+            json.dump(data, write_file, ensure_ascii=False)
 
-    return redirect(url_for('show_users'), 302)
+        flash('Create successful', 'info')
+        return redirect(url_for('show_users'), 302)
 
 
 if __name__ == "__main__":
