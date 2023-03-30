@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, get_flashed_messages
 from validate import validation
+from get_user import get_user
 import uuid
 import json
 
@@ -27,7 +28,7 @@ def show_user(id):
     with open("data_file.json", "r", encoding="utf-8") as read_file:
         data = json.load(read_file)
 
-    user = [x for x in data['users'] if x['id'] == id][0]
+    user = get_user(data,id)
 
     return render_template("/users/show.html", user=user)
 
@@ -38,7 +39,7 @@ def edit_user(id):
     with open("data_file.json", 'r', encoding="utf-8") as read_file:
         data = json.load(read_file)
 
-    user = [x for x in data['users'] if x['id'] == id][0]
+    user = get_user(data, id)
 
     return render_template('users/edit.html', user=user, errors=errors)
 
@@ -48,7 +49,7 @@ def patch_user(id):
     with open("data_file.json", 'r', encoding="utf-8") as read_file:
         data = json.load(read_file)
 
-    user = [x for x in data['users'] if x['id'] == id][0]
+    user = get_user(data, id)
     new_data = request.form.to_dict()
     errors = validation(new_data)
     if errors:
@@ -107,7 +108,7 @@ def delete_user(id):
     with open("data_file.json", "r", encoding="utf-8") as read_file:
         data = json.load(read_file)
 
-    user = [x for x in data['users'] if x['id'] == id][0]
+    user = get_user(data, id)
     if request.method == "GET":
         return render_template('users/delete.html', user=user)
     elif request.method == "POST":
