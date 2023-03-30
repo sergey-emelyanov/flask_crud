@@ -5,6 +5,9 @@
     <title>{{user.name}}</title>
 </head>
 <body>
+<form action="{{url_for('show_users')}}" method="get">
+    <button type="submit">Back to users</button>
+</form>
 <div>
     {{user.id}} : {{user.name}} | {{user.email}}
 </div>

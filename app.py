@@ -16,7 +16,7 @@ def base():
 def show_users():
     with open("data_file.json", "r", encoding="utf-8") as read_file:
         data = json.load(read_file)
-        users = data['users']
+    users = data['users']
     messages = get_flashed_messages(with_categories=True)
 
     return render_template("/users/index.html", users=users, messages=messages)
@@ -60,7 +60,7 @@ def patch_user(id):
     with open("data_file.json", "w", encoding="utf-8") as write_file:
         json.dump(data, write_file, ensure_ascii=False)
 
-    flash('Create successful', 'info')
+    flash('Edit successful', 'info')
     return redirect(url_for('show_users'), 302)
 
 
@@ -93,7 +93,7 @@ def post_users():
     else:
         with open("data_file.json", "r", encoding="utf-8") as read_file:
             data = json.load(read_file)
-            data["users"].append(new_user)
+        data["users"].append(new_user)
 
         with open("data_file.json", "w", encoding="utf-8") as write_file:
             json.dump(data, write_file, ensure_ascii=False)
@@ -102,14 +102,14 @@ def post_users():
         return redirect(url_for('show_users'), 302)
 
 
-@app.route('/user/<id>/delete', methods=['GET','POST'])
+@app.route('/user/<id>/delete', methods=['GET', 'POST'])
 def delete_user(id):
     with open("data_file.json", "r", encoding="utf-8") as read_file:
         data = json.load(read_file)
 
     user = [x for x in data['users'] if x['id'] == id][0]
     if request.method == "GET":
-        return render_template('users/delete.html', user= user)
+        return render_template('users/delete.html', user=user)
     elif request.method == "POST":
         data['users'].remove(user)
 
