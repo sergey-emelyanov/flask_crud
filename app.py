@@ -1,8 +1,9 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, get_flashed_messages
 from validate import validation
 from get_user import get_user
+from read_write_data import read_data, write_data
 import uuid
-import json
+
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = "You will never guess!"
@@ -15,8 +16,7 @@ def base():
 
 @app.route("/users")
 def show_users():
-    with open("data_file.json", "r", encoding="utf-8") as read_file:
-        data = json.load(read_file)
+    data = read_data()
     users = data['users']
     messages = get_flashed_messages(with_categories=True)
 
@@ -25,10 +25,8 @@ def show_users():
 
 @app.route("/user/<string:id>")
 def show_user(id):
-    with open("data_file.json", "r", encoding="utf-8") as read_file:
-        data = json.load(read_file)
-
-    user = get_user(data,id)
+    data = read_data()
+    user = get_user(data, id)
 
     return render_template("/users/show.html", user=user)
 
@@ -36,9 +34,7 @@ def show_user(id):
 @app.route("/user/<id>/edit")
 def edit_user(id):
     errors = {}
-    with open("data_file.json", 'r', encoding="utf-8") as read_file:
-        data = json.load(read_file)
-
+    data = read_data()
     user = get_user(data, id)
 
     return render_template('users/edit.html', user=user, errors=errors)
@@ -46,23 +42,21 @@ def edit_user(id):
 
 @app.route('/user/<id>/patch', methods=['POST'])
 def patch_user(id):
-    with open("data_file.json", 'r', encoding="utf-8") as read_file:
-        data = json.load(read_file)
-
+    data = read_data()
     user = get_user(data, id)
     new_data = request.form.to_dict()
     errors = validation(new_data)
+
     if errors:
+
         return render_template("users/edit.html", user=user, errors=errors), 422
     else:
         user['name'] = new_data['name']
         user['email'] = new_data['email']
+        write_data(data)
+        flash('Edit successful', 'info')
 
-    with open("data_file.json", "w", encoding="utf-8") as write_file:
-        json.dump(data, write_file, ensure_ascii=False)
-
-    flash('Edit successful', 'info')
-    return redirect(url_for('show_users'), 302)
+        return redirect(url_for('show_users'), 302)
 
 
 @app.route("/users/new")
@@ -90,32 +84,28 @@ def post_users():
     if errors:
         flash('Error', category='error')
         messages = get_flashed_messages(with_categories=True)
+
         return render_template("/users/new_user.html", errors=errors, user=new_user, messages=messages), 422
     else:
-        with open("data_file.json", "r", encoding="utf-8") as read_file:
-            data = json.load(read_file)
+        data = read_data()
         data["users"].append(new_user)
-
-        with open("data_file.json", "w", encoding="utf-8") as write_file:
-            json.dump(data, write_file, ensure_ascii=False)
-
+        write_data(data)
         flash('Create successful', 'info')
+
         return redirect(url_for('show_users'), 302)
 
 
 @app.route('/user/<id>/delete', methods=['GET', 'POST'])
 def delete_user(id):
-    with open("data_file.json", "r", encoding="utf-8") as read_file:
-        data = json.load(read_file)
-
+    data = read_data()
     user = get_user(data, id)
+
     if request.method == "GET":
+
         return render_template('users/delete.html', user=user)
     elif request.method == "POST":
         data['users'].remove(user)
-
-        with open("data_file.json", "w", encoding="utf-8") as write_file:
-            json.dump(data, write_file)
+        write_data(data)
 
         return redirect(url_for('show_users'))
 
