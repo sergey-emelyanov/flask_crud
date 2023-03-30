@@ -57,7 +57,6 @@ def patch_user(id):
         user['name'] = new_data['name']
         user['email'] = new_data['email']
 
-
     with open("data_file.json", "w", encoding="utf-8") as write_file:
         json.dump(data, write_file, ensure_ascii=False)
 
@@ -101,6 +100,23 @@ def post_users():
 
         flash('Create successful', 'info')
         return redirect(url_for('show_users'), 302)
+
+
+@app.route('/user/<id>/delete', methods=['GET','POST'])
+def delete_user(id):
+    with open("data_file.json", "r", encoding="utf-8") as read_file:
+        data = json.load(read_file)
+
+    user = [x for x in data['users'] if x['id'] == id][0]
+    if request.method == "GET":
+        return render_template('users/delete.html', user= user)
+    elif request.method == "POST":
+        data['users'].remove(user)
+
+        with open("data_file.json", "w", encoding="utf-8") as write_file:
+            json.dump(data, write_file)
+
+        return redirect(url_for('show_users'))
 
 
 if __name__ == "__main__":
