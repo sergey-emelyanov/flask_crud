@@ -3,12 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <title>Main</title>
+    <link rel="stylesheet" href="{{ url_for('static',filename='style.css') }}">
 </head>
 <body>
-<h1>Example of a training web app using the principle of CRUD</h1>
+<h1 class="">Example of a training web app using the principle of CRUD</h1>
 <hr>
+<div >
 <form action="{{url_for('show_users')}}" method="get">
-     <button type="submit">Show users</button>
+     <button type="submit" class="redirect_button">Show users</button>
 </form>
+</div>
 </body>
 </html>
